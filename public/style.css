@@ -1,0 +1,11 @@
+img {
+  width: 100%;
+  height: auto;
+}
+
+.jsZoomTouch:after {
+  content: 'Pinch to Zoom';
+  position: absolute;
+  top: 0;
+  right: 0;
+}
