@@ -20,13 +20,18 @@
   </head>
   <body>
     
-    <img src="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display_506_613.jpg" data-zoom="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display.jpg" />
+    <div data-zoom="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display.jpg" class="zoom" style="max-width: 600px; border: 1px solid black; overflow: hidden;">
+      <img src="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display_506_613.jpg" />
+    </div>
 
     <!-- Your web-app is https, so your scripts need to be too -->
     <script src="https://code.jquery.com/jquery-2.2.1.min.js"
             integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
             crossorigin="anonymous"></script>
-    <script src="/client.js"></script>
+    <script src="/jquery.imagezoom.js"></script>
+    <script>
+      $('.zoom').zoom();
+    </script>
 
   </body>
 </html>
