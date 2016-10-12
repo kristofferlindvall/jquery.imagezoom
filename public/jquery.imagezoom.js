@@ -1,3 +1,5 @@
+// Github repo: https://github.com/jansson/jquery.imagezoom
+
 (function ($) {
 
   $.fn.zoom = function () {
