@@ -42,6 +42,7 @@
       var $container = $(this);
       var $image = $(this).find('img');
       var $mouseZoom = $(this).find('.jsZoomMouse');
+      var offset = $container.offset();
       var touchState = $container.data(touchStateKey);
       
       loadHqImage($container);
@@ -58,12 +59,18 @@
           toPoint(e.originalEvent.touches[1])
           );
 
+        touchState.startPan = toPoint(
+          e.originalEvent.touches[0].pageX - offset.left,
+          e.originalEvent.touches[0].pageY - offset.top
+          );
         touchState.startZoom = touchState.currentZoom;
-        touchState.startPan = toPoint(e.originalEvent.touches[0]);
         
       } else if (e.originalEvent.touches.length == 1) {
         
-        touchState.startPan = toPoint(e.originalEvent.touches[0]);
+        touchState.startPan = toPoint(
+          e.originalEvent.touches[0].pageX - offset.left,
+          e.originalEvent.touches[0].pageY - offset.top
+          );
         touchState.startPosition = copyPoint(touchState.currentPosition);
         
       }
@@ -73,6 +80,7 @@
     
     var touchEndHandler = function (e) {
       var $container = $(this);
+      var offset = $container.offset();
       var touchState = $container.data(touchStateKey);
       
       // Prevent touch from simulating mouseclick/move
@@ -82,7 +90,10 @@
       
       if (e.originalEvent.touches.length == 1) {
         
-        touchState.startPan = toPoint(e.originalEvent.touches[0]);
+        touchState.startPan = toPoint(
+          e.originalEvent.touches[0].pageX - offset.left,
+          e.originalEvent.touches[0].pageY - offset.top
+          );
         touchState.startPosition = copyPoint(touchState.currentPosition);
         
       }
