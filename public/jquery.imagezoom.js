@@ -2,7 +2,7 @@
 
 (function ($) {
 
-  $.fn.zoom = function () {
+  $.fn.zoom = function (action) {
     var touchStateKey = 'zoomTouchState';
 
     var mouseMoveHandler = function (e) {
@@ -42,6 +42,7 @@
       var $container = $(this);
       var $image = $(this).find('img');
       var $mouseZoom = $(this).find('.jsZoomMouse');
+      var offset = $container.offset();
       var touchState = $container.data(touchStateKey);
       
       loadHqImage($container);
@@ -58,12 +59,18 @@
           toPoint(e.originalEvent.touches[1])
           );
 
+        touchState.startPan = toPoint(
+          e.originalEvent.touches[0].pageX - offset.left,
+          e.originalEvent.touches[0].pageY - offset.top
+          );
         touchState.startZoom = touchState.currentZoom;
-        touchState.startPan = toPoint(e.originalEvent.touches[0]);
         
       } else if (e.originalEvent.touches.length == 1) {
         
-        touchState.startPan = toPoint(e.originalEvent.touches[0]);
+        touchState.startPan = toPoint(
+          e.originalEvent.touches[0].pageX - offset.left,
+          e.originalEvent.touches[0].pageY - offset.top
+          );
         touchState.startPosition = copyPoint(touchState.currentPosition);
         
       }
@@ -73,6 +80,7 @@
     
     var touchEndHandler = function (e) {
       var $container = $(this);
+      var offset = $container.offset();
       var touchState = $container.data(touchStateKey);
       
       // Prevent touch from simulating mouseclick/move
@@ -82,7 +90,10 @@
       
       if (e.originalEvent.touches.length == 1) {
         
-        touchState.startPan = toPoint(e.originalEvent.touches[0]);
+        touchState.startPan = toPoint(
+          e.originalEvent.touches[0].pageX - offset.left,
+          e.originalEvent.touches[0].pageY - offset.top
+          );
         touchState.startPosition = copyPoint(touchState.currentPosition);
         
       }
@@ -153,14 +164,16 @@
     var resetTouch = function ($container) {
       var touchState = $container.data(touchStateKey);
       
-      touchState.startPinch = 0;
-      touchState.startZoom = 1;
-      touchState.startPan = toPoint(0,0);
-      touchState.startPosition = toPoint(0,0);
-      touchState.currentZoom = 1;
-      touchState.currentPosition = toPoint(0,0);
-      
-      applyTouch($container);
+      if (touchState) {
+        touchState.startPinch = 0;
+        touchState.startZoom = 1;
+        touchState.startPan = toPoint(0,0);
+        touchState.startPosition = toPoint(0,0);
+        touchState.currentZoom = 1;
+        touchState.currentPosition = toPoint(0,0);
+        
+        applyTouch($container);
+      }
     };
     
     var applyTouch = function ($container) {
@@ -245,34 +258,44 @@
       return [x, y];
     };
     
-    this.css({
-      'position': 'relative',
-      'background-repeat': 'no-repeat'
-    });
-    this.addClass('jsZoom');
-    if ('ontouchstart' in document.documentElement) {
-      this.addClass("jsZoomTouch");
-    }
-    this.find('img').css({'display': 'block'});
-
-    this.append($('<div class="jsZoomMouse" style="display: none; position: absolute; height: 300px; width: 300px; z-index: 9999; border-radius: 200px; background-repeat: no-repeat;"/>'));
-
-    this.data(touchStateKey, {
-        startPinch: 0,
-        startZoom: 1,
-        startPan: toPoint(0,0),
-        startPosition: toPoint(0,0),
-        currentZoom: 1,
-        currentPosition: toPoint(0,0)
-      });
-
-    this.on('mousemove', mouseMoveHandler);
-    this.on("touchstart", touchStartHandler);
-    this.on("touchend", touchEndHandler);
-    this.on("touchmove", touchMoveHandler);
     
-    $(document).on('mousemove', function () {
-      $('.jsZoomMouse').hide();
-    });
+    
+    if (action === 'reset') {
+      this.each((idx, elem) => { resetTouch($(elem)); });
+    } else {
+      
+      this.css({
+        'position': 'relative',
+        'background-repeat': 'no-repeat'
+      });
+      this.addClass('jsZoom');
+      if ('ontouchstart' in document.documentElement) {
+        this.addClass("jsZoomTouch");
+      }
+      this.find('img').css({'display': 'block'});
+    
+      this.append($('<div class="jsZoomMouse" style="display: none; position: absolute; height: 300px; width: 300px; z-index: 9999; border-radius: 200px; background-repeat: no-repeat;"/>'));
+    
+      this.each((idx, elem) => {
+        $(elem).data(touchStateKey, {
+          startPinch: 0,
+          startZoom: 1,
+          startPan: toPoint(0,0),
+          startPosition: toPoint(0,0),
+          currentZoom: 1,
+          currentPosition: toPoint(0,0)
+        });
+      });
+    
+      this.on('mousemove', mouseMoveHandler);
+      this.on("touchstart", touchStartHandler);
+      this.on("touchend", touchEndHandler);
+      this.on("touchmove", touchMoveHandler);
+      
+      $(document).on('mousemove', function () {
+        $('.jsZoomMouse').hide();
+      });
+      
+    }
   }
 })(jQuery);
