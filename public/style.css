@@ -3,9 +3,29 @@ img {
   height: auto;
 }
 
-.jsZoomTouch:after {
-  content: 'Pinch to Zoom';
+.jsZoomTouch:before {
+  content: "\f00e";
+  font: normal normal normal 20px/1 FontAwesome;
   position: absolute;
-  top: 0;
-  right: 0;
+  /*top: 20px;
+  right: 20px;*/
+  top: 10px;
+  right: 28px;
+}
+
+.jsZoomTouch:after {
+  content: "\f065";
+  font: normal normal normal 27px/1 FontAwesome;
+  position: absolute;
+  top: 18px;
+  right: 15px;
+}
+
+.jsZoomTouch.jsZoomTouchZoomed:before {
+  content: '\f010';
+  font-size: 27px;
+}
+
+.jsZoomTouch.jsZoomTouchZoomed:after {
+  content: '';
 }

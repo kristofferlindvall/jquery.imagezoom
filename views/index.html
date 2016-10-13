@@ -16,20 +16,30 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css"/>
+    <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
+    
     <link rel="stylesheet" href="/style.css">
   </head>
   <body>
     
-    <div data-zoom="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display.jpg" class="zoom" style="max-width: 600px; border: 1px solid black; overflow: hidden;">
-      <img src="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display_506_613.jpg" />
+    <div class="slider" style="border: 1px solid black; overflow: hidden; max-width: 600px; margin-bottom: 300px">
+      <div data-zoom="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display.jpg" class="zoom">
+        <img src="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display_506_613.jpg" />
+      </div>
+      <div data-zoom="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display.jpg" class="zoom">
+        <img src="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display_506_613.jpg" />
+      </div>
     </div>
 
     <!-- Your web-app is https, so your scripts need to be too -->
     <script src="https://code.jquery.com/jquery-2.2.1.min.js"
             integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
             crossorigin="anonymous"></script>
+    <script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.min.js"></script>
     <script src="/jquery.imagezoom.js"></script>
     <script>
+      $('.slider').slick();
       $('.zoom').zoom();
     </script>
 
