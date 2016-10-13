@@ -21,9 +21,9 @@
     
     <link rel="stylesheet" href="/style.css">
   </head>
-  <body>
+  <body style="padding-bottom: 300px;">
     
-    <div class="slider" style="border: 1px solid black; overflow: hidden; max-width: 600px; margin-bottom: 300px">
+    <div class="slider" style="border: 1px solid black; overflow: hidden; max-width: 600px;">
       <div data-zoom="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display.jpg" class="zoom">
         <img src="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display_506_613.jpg" />
       </div>
@@ -31,6 +31,8 @@
         <img src="https://974d871967607d4aab5a-36ea0f56f9b71f6483dc21518c0e56c7.ssl.cf3.rackcdn.com/10653383_display_506_613.jpg" />
       </div>
     </div>
+    
+    <a href="#" class="reset">Reset zoom</a>
 
     <!-- Your web-app is https, so your scripts need to be too -->
     <script src="https://code.jquery.com/jquery-2.2.1.min.js"
@@ -41,6 +43,10 @@
     <script>
       $('.slider').slick();
       $('.zoom').zoom();
+      
+      $('.reset').click(function () {
+        $('.zoom').zoom('reset');
+      });
     </script>
 
   </body>
