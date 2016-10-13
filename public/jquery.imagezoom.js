@@ -6,12 +6,15 @@
     var touchStateKey = 'zoomTouchState';
 
     var mouseMoveHandler = function (e) {
+      e.stopPropagation();
+      
       var $mouseZoom = $(this).find('.jsZoomMouse');
       var $image = $(this).find('img');
 
       loadHqImage($(this));
 
       $image.css({ visibility: 'visible' });
+      resetTouch($(this));
 
       var offset = $(this).offset();
       var x = e.pageX - offset.left;
@@ -29,6 +32,9 @@
         'background-position': (x / $(this).width() * 100) + '% ' + (y / $(this).height() * 100) + '%',
         'background-size': ($(this).width() * 6) + 'px ' + ($(this).height() * 6) + 'px'
       });
+      
+      // Make sure this is the only zoom shown on page (in case there are multiple pages)
+      $('.jsZoomMouse').hide();
       $mouseZoom.show();
     };
     
@@ -37,11 +43,6 @@
       var $image = $(this).find('img');
       var $mouseZoom = $(this).find('.jsZoomMouse');
       var touchState = $container.data(touchStateKey);
-      
-      // Prevent touch from simulating mouseclick/move
-      if (e.cancelable) {
-        e.preventDefault();
-      }
       
       loadHqImage($container);
       
@@ -142,14 +143,34 @@
 
       applyTouch($container);
 
-      if (touchState.currentPosition.x != originalPosition.x || touchState.currentPosition.y != originalPosition.y) {
+      if (touchState.currentZoom > 1) {
+        e.stopPropagation();
         e.preventDefault();
       }
 
     };
     
+    var resetTouch = function ($container) {
+      var touchState = $container.data(touchStateKey);
+      
+      touchState.startPinch = 0;
+      touchState.startZoom = 1;
+      touchState.startPan = toPoint(0,0);
+      touchState.startPosition = toPoint(0,0);
+      touchState.currentZoom = 1;
+      touchState.currentPosition = toPoint(0,0);
+      
+      applyTouch($container);
+    };
+    
     var applyTouch = function ($container) {
       var touchState = $container.data(touchStateKey);
+      
+      if (touchState.currentZoom > 1) {
+        $container.addClass('jsZoomTouchZoomed');
+      } else {
+        $container.removeClass('jsZoomTouchZoomed');
+      }
       
       $container.css({
         'background-size': (touchState.currentZoom * 100) + '%',
@@ -235,19 +256,23 @@
     this.find('img').css({'display': 'block'});
 
     this.append($('<div class="jsZoomMouse" style="display: none; position: absolute; height: 300px; width: 300px; z-index: 9999; border-radius: 200px; background-repeat: no-repeat;"/>'));
-    
+
     this.data(touchStateKey, {
-      startPinch: 0,
-      startZoom: 1,
-      startPan: toPoint(0,0),
-      startPosition: toPoint(0,0),
-      currentZoom: 1,
-      currentPosition: toPoint(0,0)
-    });
+        startPinch: 0,
+        startZoom: 1,
+        startPan: toPoint(0,0),
+        startPosition: toPoint(0,0),
+        currentZoom: 1,
+        currentPosition: toPoint(0,0)
+      });
 
     this.on('mousemove', mouseMoveHandler);
     this.on("touchstart", touchStartHandler);
     this.on("touchend", touchEndHandler);
     this.on("touchmove", touchMoveHandler);
+    
+    $(document).on('mousemove', function () {
+      $('.jsZoomMouse').hide();
+    });
   }
 })(jQuery);
