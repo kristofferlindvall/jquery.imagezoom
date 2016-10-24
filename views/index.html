@@ -32,7 +32,8 @@
       </div>
     </div>
     
-    <a href="#" class="reset">Reset zoom</a>
+    <a href="#" class="reset">Reset zoom</a><br><br>
+    <a href="#" class="toggle">Toggle mouse zoom</a>
 
     <!-- Your web-app is https, so your scripts need to be too -->
     <script src="https://code.jquery.com/jquery-2.2.1.min.js"
@@ -42,10 +43,15 @@
     <script src="/jquery.imagezoom.js"></script>
     <script>
       $('.slider').slick();
-      $('.zoom').zoom();
+      $('.zoom').zoom({
+        hideOnMouseOut: false
+      });
       
       $('.reset').click(function () {
         $('.zoom').zoom('reset');
+      });
+      $('.toggle').click(function () {
+        $('.slider').toggleClass('enableMouseZoom');
       });
     </script>
 
