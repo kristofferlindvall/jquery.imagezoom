@@ -36,7 +36,11 @@
       </div>
     </div>
     
-    <a href="#" class="reset">Reset zoom</a>
+    <a href="#" class="reset">Reset zoom</a><br>
+    
+    <a href="#" class="zoomin">Zoom</a><br>
+    
+    <a href="#" class="toggle">Toggle</a>
 
     <!-- Your web-app is https, so your scripts need to be too -->
     <script src="https://code.jquery.com/jquery-2.2.1.min.js"
@@ -46,10 +50,32 @@
     <script src="/jquery.imagezoom.js"></script>
     <script>
       $('.slider').slick();
-      $('.zoom').zoom();
+      $('.zoom').zoom({
+        zoomOnHover: false
+      });
       
-      $('.reset').click(function () {
-        $('.zoom').zoom('reset');
+      $('.reset').click(function (e) {
+        e.preventDefault();
+        $('.zoom').zoom(function (zoom) {
+          zoom.setZoom(1);
+        });
+      });
+      $('.zoomin').click(function (e) {
+        e.preventDefault();
+        $('.zoom').zoom(function (zoom) {
+          zoom.setZoom(6);
+        });
+      });
+      
+      $('.toggle').click(function (e) {
+        e.preventDefault();
+        $('.zoom').zoom(function (zoom) {
+          if (zoom.getZoomLevel() !== 1) {
+            zoom.setZoom(1);
+          } else {
+            zoom.setZoom(6);
+          }
+        });
       });
     </script>
 

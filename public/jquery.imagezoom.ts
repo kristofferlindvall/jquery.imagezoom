@@ -4,7 +4,7 @@
 
 module JQueryImageZoom {
     export interface PluginOptions {
-
+        zoomOnHover: boolean;
     }
 
     interface Point {
@@ -28,12 +28,13 @@ module JQueryImageZoom {
 
     export class Plugin {
 
+        private options: PluginOptions;
         private image: JQuery;
         private state: ZoomState = new ZoomState();
 
-        constructor (private $: JQueryStatic, private container: JQuery, private options: PluginOptions) {
-            options = $.extend({
-                autoMouseZoom: true
+        constructor (private $: JQueryStatic, private container: JQuery, options: PluginOptions) {
+            this.options = $.extend({
+                zoomOnHover: true
             }, options);
 
             this.image = container.find('img');
@@ -44,19 +45,22 @@ module JQueryImageZoom {
             });
             container.addClass('jsZoom');
             if ('ontouchstart' in document.documentElement) {
-                container.addClass("jsZoomTouch");
+                container.addClass("jsZoom-Touch");
+            } else {
+                container.addClass("jsZoom-NoTouch");
             }
             container.find('img').css({ 'display': 'block' });
-
-            container.append($('<div class="jsZoomMouse" style="visibiliy: none; position: absolute; z-index: 9999; background-repeat: no-repeat;"/>'));
 
             container.on('mousemove', (e) => this.mouseMoveHandler(e));
             container.on("touchstart", (e) => this.touchStartHandler(e));
             container.on("touchend", (e) => this.touchEndHandler(e));
             container.on("touchmove", (e) => this.touchMoveHandler(e));
 
-            $(document).on('mousemove', function () {
-                $('.jsZoomMouse').hide();
+            $(document).on('mousemove', () => {
+                if (this.options.zoomOnHover) {
+                    this.state.currentZoom = 1;
+                    this.update();
+                }
             });
         }
 
@@ -72,10 +76,10 @@ module JQueryImageZoom {
         };
 
         private mouseMoveHandler (e) {
-            var $mouseZoom = this.container.find('.jsZoomMouse');
-            var img = this.image;
 
-            this.state.currentZoom = 6;
+            if (this.options.zoomOnHover) {
+                this.state.currentZoom = 6;
+            }
 
             if (this.state.currentZoom <= 1) {
                 return;
@@ -83,44 +87,42 @@ module JQueryImageZoom {
 
             e.stopPropagation();
 
-            this.loadHqImage(this.container);
-
             var offset = this.container.offset();
-            var x = e.pageX - offset.left;
-            var y = e.pageY - offset.top;
+            this.state.currentPosition = this.calculateZoomPosition({
+                x: e.pageX - offset.left,
+                y: e.pageY - offset.top
+            });
+
+            this.update();
+        };
+
+        private calculateZoomPosition(point: Point) {
 
             // Caluclate relative position of mouse in percentages
-            var xP = x / this.container.width();
-            var yP = y / this.container.height();
+            var xP = point.x / this.container.width();
+            var yP = point.y / this.container.height();
 
             // Translate percentage to absolute position of zoom layer
             var xZoom = (this.container.width() * this.state.currentZoom) * xP;
             var yZoom = (this.container.height() * this.state.currentZoom) * yP;
 
             // Translate to relative position of zoom layer
-            this.state.currentPosition = {
-                x: xZoom - x,
-                y: yZoom - y
+            return {
+                x: xZoom - point.x,
+                y: yZoom - point.y
             }
-
-            this.update();
-        };
+        }
 
         private touchStartHandler (e) {
-            var $container = this.container;
-            var $image = this.image;
-            var $mouseZoom = this.container.find('.jsZoomMouse');
-            var offset = $container.offset();
+            var img = this.image;
+            var offset = this.container.offset();
             var s = this.state;
 
-            this.loadHqImage($container);
-
-            $mouseZoom.hide();
-            $image.css({ visibility: 'hidden' });
+            img.css({ visibility: 'hidden' });
 
             if (e.originalEvent.touches.length == 2) {
 
-                $image.css({ visibility: 'hidden' });
+                img.css({ visibility: 'hidden' });
 
                 s.touch.startPinch = this.distance(
                   this.toPoint(e.originalEvent.touches[0]),
@@ -147,9 +149,8 @@ module JQueryImageZoom {
         };
 
         private touchEndHandler (e) {
-            var $container = this.container;
-            var offset = $container.offset();
-            var touchState = this.state;
+            var offset = this.container.offset();
+            var s = this.state;
 
             // Prevent touch from simulating mouseclick/move
             if (e.cancelable) {
@@ -158,11 +159,11 @@ module JQueryImageZoom {
 
             if (e.originalEvent.touches.length == 1) {
 
-                touchState.touch.startPan = this.toPoint(
+                s.touch.startPan = this.toPoint(
                   e.originalEvent.touches[0].pageX - offset.left,
                   e.originalEvent.touches[0].pageY - offset.top
                   );
-                touchState.touch.startPosition = this.copyPoint(touchState.currentPosition);
+                s.touch.startPosition = this.copyPoint(s.currentPosition);
 
             }
 
@@ -170,12 +171,9 @@ module JQueryImageZoom {
         };
 
         private touchMoveHandler (e) {
-            var $container = this.container;
-            var $mouseZoom = this.container.find('.jsZoomMouse');
-            var $image = this.image;
-            var touchState = this.state;
-            var offset = $container.offset();
-            var originalPosition = this.copyPoint(touchState.currentPosition);
+            var c = this.container;
+            var s = this.state;
+            var offset = c.offset();
 
             var currentPan = this.toPoint(
                 e.originalEvent.touches[0].pageX - offset.left,
@@ -185,58 +183,75 @@ module JQueryImageZoom {
             if (e.originalEvent.touches.length == 2) {
 
                 var preZoom = this.toPoint(
-                  (touchState.currentPosition.x + currentPan.x) / ($container.width() * touchState.currentZoom),
-                  (touchState.currentPosition.y + currentPan.y) / ($container.height() * touchState.currentZoom)
+                  (s.currentPosition.x + currentPan.x) / (c.width() * s.currentZoom),
+                  (s.currentPosition.y + currentPan.y) / (c.height() * s.currentZoom)
                   );
 
                 var dst = this.distance(this.toPoint(e.originalEvent.touches[0]), this.toPoint(e.originalEvent.touches[1]));
 
-                touchState.currentZoom = touchState.touch.startZoom * (dst / touchState.touch.startPinch);
-                if (touchState.currentZoom < 1) {
-                    touchState.currentZoom = 1;
+                s.currentZoom = s.touch.startZoom * (dst / s.touch.startPinch);
+                if (s.currentZoom < 1) {
+                    s.currentZoom = 1;
                 }
-                if (touchState.currentZoom > 10) {
-                    touchState.currentZoom = 10;
+                if (s.currentZoom > 10) {
+                    s.currentZoom = 10;
                 }
 
-                touchState.currentPosition = this.toPoint(
-                  preZoom.x * $container.width() * touchState.currentZoom - currentPan.x,
-                  preZoom.y * $container.height() * touchState.currentZoom - currentPan.y
+                s.currentPosition = this.toPoint(
+                  preZoom.x * c.width() * s.currentZoom - currentPan.x,
+                  preZoom.y * c.height() * s.currentZoom - currentPan.y
                   );
 
             } else if (e.originalEvent.touches.length == 1) {
 
-                touchState.currentPosition = this.toPoint(
-                  touchState.currentPosition.x = touchState.touch.startPosition.x + (touchState.touch.startPan.x - currentPan.x),
-                  touchState.currentPosition.y = touchState.touch.startPosition.y + (touchState.touch.startPan.y - currentPan.y)
+                s.currentPosition = this.toPoint(
+                  s.currentPosition.x = s.touch.startPosition.x + (s.touch.startPan.x - currentPan.x),
+                  s.currentPosition.y = s.touch.startPosition.y + (s.touch.startPan.y - currentPan.y)
                   );
             }
 
-            var zoomWidth = $container.width() * touchState.currentZoom;
-            var zoomHeight = $container.height() * touchState.currentZoom;
+            var zoomWidth = c.width() * s.currentZoom;
+            var zoomHeight = c.height() * s.currentZoom;
 
-            if (touchState.currentPosition.x < 0) { touchState.currentPosition.x = 0; }
-            if (touchState.currentPosition.x + $container.width() > zoomWidth) { touchState.currentPosition.x = zoomWidth - $container.width(); }
-            if (touchState.currentPosition.y < 0) { touchState.currentPosition.y = 0; }
-            if (touchState.currentPosition.y + $container.height() > zoomHeight) { touchState.currentPosition.y = zoomHeight - $container.height(); }
+            if (s.currentPosition.x < 0) { s.currentPosition.x = 0; }
+            if (s.currentPosition.x + c.width() > zoomWidth) { s.currentPosition.x = zoomWidth - c.width(); }
+            if (s.currentPosition.y < 0) { s.currentPosition.y = 0; }
+            if (s.currentPosition.y + c.height() > zoomHeight) { s.currentPosition.y = zoomHeight - c.height(); }
 
             this.update();
 
-            if (touchState.currentZoom > 1) {
+            if (s.currentZoom > 1) {
                 e.stopPropagation();
                 e.preventDefault();
             }
 
         };
 
-        public resetTouch ($container) {
+        public resetZoom () {
             this.state = new ZoomState();
             this.update();
         };
 
+        public setZoom (level: number) {
+            this.state.currentZoom = level;
+
+            // Set focus to center
+            this.state.currentPosition = this.calculateZoomPosition({
+                x: this.container.width() / 2,
+                y: this.container.height() / 2
+            });
+
+            this.update();
+        }
+
+        public getZoomLevel() {
+            return this.state.currentZoom;
+        }
+
         private update () {
 
-            if (this.state.currentZoom > 1) {
+            if (this.state.currentZoom !== 1) {
+                this.loadHqImage();
                 this.container.addClass('jsZoom-Zoomed');
                 this.image.css({'visibility': 'hidden'});
             } else {
@@ -250,34 +265,26 @@ module JQueryImageZoom {
             });
         }
 
-        private loadHqImage ($target) {
-            var $mouseZoom = $target.find('.jsZoomMouse');
-            var $image = $target.find('img');
+        private loadHqImage () {
 
-            if (!$target.hasClass('jsZoomHqLoaded')) {
-                $target.addClass('jsZoomHqLoaded');
+            if (!this.container.hasClass('jsZoom-HqLoaded')) {
+                this.container.addClass('jsZoom-HqLoaded');
 
-                $target.css({
-                    'background-image': 'url(' + $image.attr('src') + ')'
-                });
-                $mouseZoom.css({
-                    'background-image': 'url(' + $image.attr('src') + ')'
+                this.container.css({
+                    'background-image': 'url(' + this.image.attr('src') + ')'
                 });
 
-                var hqImage = $target.attr('data-zoom');
+                var hqImage = this.container.attr('data-zoom');
                 if (hqImage) {
-                    var img = new Image();
+                    var tmpImg = new Image();
 
-                    img.onload = function () {
-                        $target.css({
-                            'background-image': 'url(' + hqImage + ')'
-                        });
-                        $mouseZoom.css({
+                    tmpImg.onload = () => {
+                        this.container.css({
                             'background-image': 'url(' + hqImage + ')'
                         });
                     };
 
-                    img.src = $target.attr('data-zoom');
+                    tmpImg.src = this.container.attr('data-zoom');
                 }
             }
         };
