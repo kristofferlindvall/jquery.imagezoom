@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "out": "public/jquery.imagezoom.js",
+        "watch": false
+    },
+    "files": [
+        "public/jquery.imagezoom.ts"
+    ]
+}
