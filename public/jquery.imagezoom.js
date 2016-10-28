@@ -45,12 +45,12 @@ var JQueryImageZoom;
             container.on("touchstart", function (e) { return _this.touchStartHandler(e); });
             container.on("touchend", function (e) { return _this.touchEndHandler(e); });
             container.on("touchmove", function (e) { return _this.touchMoveHandler(e); });
-            container.on('mousedown', function (e) {
+            container.on('click', function (e) {
                 if (!_this.options.zoomOnHover && _this.state.currentZoom !== 1) {
                     e.stopPropagation();
                 }
             });
-            $(document).on('mousedown', function () {
+            $(document).on('click', function () {
                 if (!_this.options.zoomOnHover) {
                     _this.state.currentZoom = 1;
                     _this.update();

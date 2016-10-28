@@ -56,13 +56,13 @@ module JQueryImageZoom {
             container.on("touchend", (e) => this.touchEndHandler(e));
             container.on("touchmove", (e) => this.touchMoveHandler(e));
 
-            container.on('mousedown', (e) => {
+            container.on('click', (e) => {
                 if (!this.options.zoomOnHover && this.state.currentZoom !== 1) {
                     e.stopPropagation();
                 }
             });
 
-            $(document).on('mousedown', () => {
+            $(document).on('click', () => {
                 if (!this.options.zoomOnHover) {
                     this.state.currentZoom = 1;
                     this.update();
